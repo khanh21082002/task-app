@@ -6,10 +6,10 @@ port = 54321
 schemas = ["public", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 
-[db]
+[database]
 port = 54322
 
-[db.seed]
+[database_seed]
 enabled = true
 sql_paths = ['./seed.sql']
 
@@ -22,7 +22,7 @@ port = 54323
 api_url = "http://127.0.0.1"
 openai_api_key = "env(OPENAI_API_KEY)"
 
-[inbucket]
+[file_storage]
 enabled = true
 port = 54324
 
@@ -31,14 +31,14 @@ enabled = true
 file_size_limit = "50MiB"
 image_transformation = true
 
-[auth]
+[authentication]
 enabled = true
 site_url = "http://127.0.0.1:3000"
 additional_redirect_urls = ["https://127.0.0.1:3000"]
 jwt_expiry = 3600
-enable_signup = true
+allow_user_signup = true
 
-[auth.email]
-enable_signup = true
-double_confirm_changes = true
+[authentication.email]
+allow_user_signup = true
+require_double_confirmation_for_changes = true
 enable_confirmations = false
