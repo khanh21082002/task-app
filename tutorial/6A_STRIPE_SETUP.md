@@ -5,9 +5,9 @@ set -e
 echo "Stripe Setup Script"
 echo "=================="
 
-# 1. Create subscription product and price
+# 1. Create Premium Subscription Product and Price
 echo -e "\n1. Creating Premium Subscription Product..."
-PREMIUM_PRICE_ID=$(stripe prices create \
+PREMIUM_SUBSCRIPTION_PRICE_ID=$(stripe prices create \
   --currency=usd \
   --unit-amount=1000 \
   --recurring interval=month \
@@ -16,11 +16,11 @@ PREMIUM_PRICE_ID=$(stripe prices create \
   --id=price_premium_monthly \
   | jq -r '.id')
 
-echo "Created price ID: $PREMIUM_PRICE_ID"
+echo "Created Premium subscription price ID: $PREMIUM_SUBSCRIPTION_PRICE_ID"
 
 # 2. Configure Customer Portal
 echo -e "\n2. Configuring Customer Portal..."
-PORTAL_CONFIG_ID=$(stripe billing_portal configurations create \
+CUSTOMER_PORTAL_CONFIG_ID=$(stripe billing_portal configurations create \
   --business-profile privacy_policy_url=https://your-site.com/privacy \
   --business-profile terms_of_service_url=https://your-site.com/terms \
   --default_return_url=http://localhost:3000/profile \
@@ -31,11 +31,11 @@ PORTAL_CONFIG_ID=$(stripe billing_portal configurations create \
   --features invoice_history=enabled \
   | jq -r '.id')
 
-echo "Created portal config ID: $PORTAL_CONFIG_ID"
+echo "Created customer portal config ID: $CUSTOMER_PORTAL_CONFIG_ID"
 
 # 3. Set up Webhook (requires ngrok or tunnel)
 echo -e "\n3. Setting up Webhook..."
-WEBHOOK_SECRET=$(stripe webhook create \
+STRIPE_WEBHOOK_SECRET=$(stripe webhook create \
   --url=https://[YOUR-PROJECT-ID].supabase.co/functions/v1/stripe-webhook \
   --events checkout.session.completed \
   --events customer.subscription.deleted \
@@ -43,7 +43,7 @@ WEBHOOK_SECRET=$(stripe webhook create \
   --events invoice.payment_failed \
   | jq -r '.secret')
 
-echo "Webhook secret: $WEBHOOK_SECRET"
+echo "Webhook secret: $STRIPE_WEBHOOK_SECRET"
 
 # 4. Collect required values
 echo -e "\n4. Collecting Required Values:"
@@ -58,5 +58,5 @@ stripe prices list
 echo -e "\nEnvironment Variables Setup:"
 echo "Add these to your .env.test.local file:"
 echo "STRIPE_SECRET_KEY=\"$(stripe config get --field=secret_key)\""
-echo "STRIPE_PRICE_ID=\"$PREMIUM_PRICE_ID\""
-echo "STRIPE_WEBHOOK_SECRET=\"$WEBHOOK_SECRET\""
+echo "STRIPE_PREMIUM_PRICE_ID=\"$PREMIUM_SUBSCRIPTION_PRICE_ID\""
+echo "STRIPE_WEBHOOK_SECRET=\"$STRIPE_WEBHOOK_SECRET\""
