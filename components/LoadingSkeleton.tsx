@@ -2,29 +2,29 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { tw } from "twin.macro";
 
-const SkeletonHeader = tw(Skeleton)`
+const SkeletonProfileAvatar = tw(Skeleton)`
   h-8 w-48
 `;
 
-const SkeletonTitle = tw(Skeleton)`
+const SkeletonProfileName = tw(Skeleton)`
   h-6 w-32
 `;
 
-const SkeletonText = tw(Skeleton)`
+const SkeletonProfileDescription = tw(Skeleton)`
   h-4 w-full
 `;
 
-export function LoadingSkeleton() {
+export function ProfileLoadingSkeleton() {
   return (
     <div className="space-y-6">
-      <SkeletonHeader />
+      <SkeletonProfileAvatar />
       <Card>
         <CardHeader>
-          <SkeletonTitle />
+          <SkeletonProfileName />
         </CardHeader>
         <CardContent className="space-y-4">
-          <SkeletonText />
-          <SkeletonText />
+          <SkeletonProfileDescription />
+          <SkeletonProfileDescription />
         </CardContent>
       </Card>
     </div>
