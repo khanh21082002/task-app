@@ -1,17 +1,30 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { tw } from "twin.macro";
+
+const SkeletonHeader = tw(Skeleton)`
+  h-8 w-48
+`;
+
+const SkeletonTitle = tw(Skeleton)`
+  h-6 w-32
+`;
+
+const SkeletonText = tw(Skeleton)`
+  h-4 w-full
+`;
 
 export function LoadingSkeleton() {
   return (
     <div className="space-y-6">
-      <Skeleton className="h-8 w-48" />
+      <SkeletonHeader />
       <Card>
         <CardHeader>
-          <Skeleton className="h-6 w-32" />
+          <SkeletonTitle />
         </CardHeader>
         <CardContent className="space-y-4">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-full" />
+          <SkeletonText />
+          <SkeletonText />
         </CardContent>
       </Card>
     </div>
