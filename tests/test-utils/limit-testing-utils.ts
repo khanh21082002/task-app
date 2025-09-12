@@ -1,11 +1,11 @@
 import { supabaseServiceClient } from "./supabase-client";
 
-export const TASK_LIMITS = {
+export const TASK_TIER_LIMITS = {
   FREE_TIER: 100,
   PREMIUM_TIER: 10_000,
 };
 
-export async function setUserSubscriptionTier(
+export async function updateSubscriptionTier(
   userId: string,
   tier: "free" | "premium"
 ) {
@@ -13,15 +13,15 @@ export async function setUserSubscriptionTier(
     throw new Error("User ID is required");
   }
 
-  const { error: profileError } = await supabaseServiceClient
+  const { error: subscriptionError } = await supabaseServiceClient
     .from("profiles")
     .update({ subscription_plan: tier })
     .eq("user_id", userId);
 
-  handleSupabaseError(profileError, `Failed to set subscription tier for user`);
+  handleSupabaseErrorMessage(subscriptionError, `Failed to set subscription tier for user`);
 }
 
-export async function setTasksCreatedCount(
+export async function updateTaskCount(
   userId: string,
   count: number
 ) {
@@ -29,21 +29,21 @@ export async function setTasksCreatedCount(
     throw new Error("User ID is required");
   }
 
-  const yearMonth = new Date().toISOString().slice(0, 7);
-  const { error: usageError } = await supabaseServiceClient
+  const formattedDate = new Date().toISOString().slice(0, 7);
+  const { error: taskUsageError } = await supabaseServiceClient
     .from("usage_tracking")
     .upsert({
       user_id: userId,
-      year_month: yearMonth,
+      year_month: formattedDate,
       tasks_created: count,
     }, {
       onConflict: "user_id,year_month"
     });
 
-  handleSupabaseError(usageError, `Failed to update usage for ${yearMonth}`);
+  handleSupabaseErrorMessage(taskUsageError, `Failed to update usage for ${formattedDate}`);
 }
 
-function handleSupabaseError(error: any, message: string) {
+function handleSupabaseErrorMessage(error: any, message: string, userId: string) {
   if (error) {
     console.log(`❌ ${message} for user: ${userId}`);
     throw error;
