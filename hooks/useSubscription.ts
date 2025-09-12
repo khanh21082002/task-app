@@ -2,7 +2,6 @@ import { useState } from "react";
 import { UseSubscriptionReturn } from "@/types/subscription";
 
 export function useSubscription(): UseSubscriptionReturn {
-  const [error, setError] = useState<string | null>(null);
   const manageSubscription = async (accessToken: string) => {
     try {
       const response = await fetch(
@@ -22,7 +21,6 @@ export function useSubscription(): UseSubscriptionReturn {
       window.location.href = data.url;
     } catch (error: any) {
       console.error("Error managing subscription:", error);
-      setError(error.message);
       throw error;
     }
   };
