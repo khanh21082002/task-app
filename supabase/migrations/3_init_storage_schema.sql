@@ -1,85 +1,137 @@
--- First, we need to remove the existing bucket if it exists.
--- This lets us reset the DB without having to manually delete the bucket.
-do $$
-begin
-  if exists (
-    select 1 from storage.buckets where id = 'task-attachments'
-  ) then
-    -- Delete all objects in bucket first
-    delete from storage.objects where bucket_id = 'task-attachments';
-    -- Then delete bucket
-    delete from storage.buckets where id = 'task-attachments';
-  end if;
-end $$;
+async function runSetup() {
+  try {
+    // First, remove existing bucket if it exists
+    await deleteExistingBucket();
+    
+    // Create new bucket with configurations
+    await createStorageBucket();
+    
+    // Set up security policies
+    await createSecurityPolicies();
+    
+    // Create trigger function
+    await createTriggerFunction();
+    
+    // Grant necessary permissions
+    await grantPermissions();
+    
+    console.log('Setup completed successfully');
+  } catch (error) {
+    console.error('Setup failed:', error);
+    throw error;
+  }
+}
 
--- Create storage bucket with size and MIME type restrictions
-insert into storage.buckets (
-  id, 
-  name,
-  public,
-  file_size_limit,
-  allowed_mime_types
-)
-values (
-  'task-attachments',
-  'task-attachments',
-  true,
-  1000000, -- 1MB in bytes
-  array[
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'image/webp'
-  ]
-);
+async function deleteExistingBucket() {
+  const query = `
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1 FROM storage.buckets WHERE id = 'task-attachments'
+      ) THEN
+        DELETE FROM storage.objects WHERE bucket_id = 'task-attachments';
+        DELETE FROM storage.buckets WHERE id = 'task-attachments';
+      END IF;
+    END $$;
+  `;
+  await db.query(query);
+}
 
--- Security policy: Public can view attachments
-create policy "Public can view attachments"
-on storage.objects for select
-using (bucket_id = 'task-attachments');
+async function createStorageBucket() {
+  const query = `
+    INSERT INTO storage.buckets (
+      id, 
+      name,
+      public,
+      file_size_limit,
+      allowed_mime_types
+    )
+    VALUES (
+      'task-attachments',
+      'task-attachments',
+      true,
+      1000000,
+      array[
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp'
+      ]
+    );
+  `;
+  await db.query(query);
+}
 
--- Security policy: Users can upload their own attachments
-create policy "Users can upload their own attachments"
-on storage.objects for insert
-to authenticated
-with check (
-  bucket_id = 'task-attachments'
-  and (storage.foldername(name))[1] = auth.uid()::text
-);
+async function createSecurityPolicies() {
+  await createPublicViewPolicy();
+  await createUserUploadPolicy();
+  await createUserDeletePolicy();
+}
 
--- Security policy: Users can delete their own attachments
-create policy "Users can delete their own attachments"
-on storage.objects for delete
-to authenticated
-using (
-  bucket_id = 'task-attachments'
-  and (storage.foldername(name))[1] = auth.uid()::text
-);
+async function createPublicViewPolicy() {
+  const query = `
+    CREATE POLICY "Public can view attachments"
+    ON storage.objects FOR SELECT
+    USING (bucket_id = 'task-attachments');
+  `;
+  await db.query(query);
+}
 
--- Function to delete task storage object
-create or replace function delete_task_storage_object()
-returns trigger
-security definer
-set search_path = public
-as $$
-begin
-  -- Only attempt to delete if there was an image
-  if old.image_url is not null then
-    -- Delete directly from storage.objects table
-    delete from storage.objects
-    where bucket_id = 'task-attachments'
-    and name = old.image_url;
-  end if;
-  
-  return old;
-end;
-$$ language plpgsql;
+async function createUserUploadPolicy() {
+  const query = `
+    CREATE POLICY "Users can upload their own attachments"
+    ON storage.objects FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      bucket_id = 'task-attachments'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+  `;
+  await db.query(query);
+}
 
--- Trigger to cleanup storage when task is deleted
-create trigger cleanup_storage_on_task_delete
-  before delete on public.tasks
-  for each row
-  execute function delete_task_storage_object();
+async function createUserDeletePolicy() {
+  const query = `
+    CREATE POLICY "Users can delete their own attachments"
+    ON storage.objects FOR DELETE
+    TO authenticated
+    USING (
+      bucket_id = 'task-attachments'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+  `;
+  await db.query(query);
+}
 
--- Grant necessary permissions
-grant delete on storage.objects to authenticated;
+async function createTriggerFunction() {
+  const query = `
+    CREATE OR REPLACE FUNCTION delete_task_storage_object()
+    RETURNS TRIGGER
+    SECURITY DEFINER
+    SET search_path = public
+    AS $$
+    BEGIN
+      IF OLD.image_url IS NOT NULL THEN
+        DELETE FROM storage.objects
+        WHERE bucket_id = 'task-attachments'
+        AND name = OLD.image_url;
+      END IF;
+      
+      RETURN OLD;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    CREATE TRIGGER cleanup_storage_on_task_delete
+    BEFORE DELETE ON public.tasks
+    FOR EACH ROW
+    EXECUTE FUNCTION delete_task_storage_object();
+  `;
+  await db.query(query);
+}
+
+async function grantPermissions() {
+  const query = `
+    GRANT DELETE ON storage.objects TO authenticated;
+  `;
+  await db.query(query);
+}
