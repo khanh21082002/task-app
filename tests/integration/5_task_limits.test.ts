@@ -1,6 +1,6 @@
 import {
-  setUserSubscriptionTier,
-  setTasksCreatedCount,
+  setUserSubscriptionPlan as setUserSubscriptionTier,
+  setTaskCount as setTasksCreatedCount,
   TASK_LIMITS,
 } from "../test-utils/limit-testing-utils";
 
@@ -11,7 +11,7 @@ import {
   createTask,
 } from "../test-utils/user-testing-utils";
 
-const TEST_USER_FRANK = {
+const TEST_USER_CREDENTIALS = {
   name: "Frank (Test User)",
   email: "test-user.frank@pixegami.io",
   password: "Test123!@#Frank",
@@ -20,7 +20,7 @@ const TEST_USER_FRANK = {
 describe("Suite 5: Task Limits and Premium Features", () => {
   let testUser: TestUser;
   beforeAll(async () => {
-    testUser = await getOrCreateTestUser(TEST_USER_FRANK);
+    testUser = await getOrCreateTestUser(TEST_USER_CREDENTIALS);
   });
 
   afterAll(async () => {
@@ -29,40 +29,40 @@ describe("Suite 5: Task Limits and Premium Features", () => {
     }
   });
 
-  test("free user can create task", async () => {
+  test("free user can create task within limit", async () => {
     await setUserSubscriptionTier(testUser.id, "free");
-    await setTasksCreatedCount(testUser.id, 0);
-    const { error: errorBelowLimit } = await createTask(testUser, "Free Task");
-    expect(errorBelowLimit).toBeFalsy();
+    await setTaskCount(testUser.id, 0);
+    const { error: expectedError } = await createTask(testUser, "Free Task (Within Limit)");
+    expect(expectedError).toBeFalsy();
   });
 
-  test("free user cannot exceed task limit", async () => {
+  test("free user cannot create task when limit is reached", async () => {
     await setUserSubscriptionTier(testUser.id, "free");
-    await setTasksCreatedCount(testUser.id, TASK_LIMITS.FREE_TIER);
-    const { error: errorAtLimit } = await createTask(
+    await setTaskCount(testUser.id, TASK_LIMITS.FREE_TIER);
+    const { error: expectedError } = await createTask(
       testUser,
-      "Free Task (Should fail at limit)"
+      "Free Task (Limit Reached)"
     );
-    expect(errorAtLimit).toBeTruthy();
+    expect(expectedError).toBeTruthy();
   });
 
-  test("premium user can exceed free tier", async () => {
+  test("premium user can create task within premium limit", async () => {
     await setUserSubscriptionTier(testUser.id, "premium");
-    await setTasksCreatedCount(testUser.id, TASK_LIMITS.FREE_TIER);
-    const { error: errorAboveLimit } = await createTask(
+    await setTaskCount(testUser.id, TASK_LIMITS.FREE_TIER);
+    const { error: expectedError } = await createTask(
       testUser,
-      "Premium Task"
+      "Premium Task (Within Limit)"
     );
-    expect(errorAboveLimit).toBeFalsy();
+    expect(expectedError).toBeFalsy();
   });
 
-  test("premium user cannot exceed premium limit", async () => {
+  test("premium user cannot create task when premium limit is reached", async () => {
     await setUserSubscriptionTier(testUser.id, "premium");
-    await setTasksCreatedCount(testUser.id, TASK_LIMITS.PREMIUM_TIER);
-    const { error: errorAboveLimit } = await createTask(
+    await setTaskCount(testUser.id, TASK_LIMITS.PREMIUM_TIER);
+    const { error: expectedError } = await createTask(
       testUser,
-      "Premium Task (Should fail at limit)"
+      "Premium Task (Limit Reached)"
     );
-    expect(errorAboveLimit).toBeTruthy();
+    expect(expectedError).toBeTruthy();
   });
 });
