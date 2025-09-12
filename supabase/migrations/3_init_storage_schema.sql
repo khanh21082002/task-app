@@ -1,137 +1,21 @@
-async function runSetup() {
-  try {
-    // First, remove existing bucket if it exists
-    await deleteExistingBucket();
-    
-    // Create new bucket with configurations
-    await createStorageBucket();
-    
-    // Set up security policies
-    await createSecurityPolicies();
-    
-    // Create trigger function
-    await createTriggerFunction();
-    
-    // Grant necessary permissions
-    await grantPermissions();
-    
-    console.log('Setup completed successfully');
-  } catch (error) {
-    console.error('Setup failed:', error);
-    throw error;
-  }
-}
+<think>
+Okay, I need to help the user convert their callback-based code to use async/await. Let me look at the code they provided.
 
-async function deleteExistingBucket() {
-  const query = `
-    DO $$
-    BEGIN
-      IF EXISTS (
-        SELECT 1 FROM storage.buckets WHERE id = 'task-attachments'
-      ) THEN
-        DELETE FROM storage.objects WHERE bucket_id = 'task-attachments';
-        DELETE FROM storage.buckets WHERE id = 'task-attachments';
-      END IF;
-    END $$;
-  `;
-  await db.query(query);
-}
+First, I see that the user has several async functions like runSetup, deleteExistingBucket, createStorageBucket, etc. Each of these functions uses await with db.query, which is good because it's already using Promises.
 
-async function createStorageBucket() {
-  const query = `
-    INSERT INTO storage.buckets (
-      id, 
-      name,
-      public,
-      file_size_limit,
-      allowed_mime_types
-    )
-    VALUES (
-      'task-attachments',
-      'task-attachments',
-      true,
-      1000000,
-      array[
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp'
-      ]
-    );
-  `;
-  await db.query(query);
-}
+The main function, runSetup, is an async function that awaits each of these setup steps in sequence. That looks correct because each step is properly awaited, ensuring that the next step doesn't start until the previous one finishes.
 
-async function createSecurityPolicies() {
-  await createPublicViewPolicy();
-  await createUserUploadPolicy();
-  await createUserDeletePolicy();
-}
+I check each of the helper functions. They all have async before the function and use await when calling db.query. That means they're correctly written as async functions, which is necessary for using await inside them.
 
-async function createPublicViewPolicy() {
-  const query = `
-    CREATE POLICY "Public can view attachments"
-    ON storage.objects FOR SELECT
-    USING (bucket_id = 'task-attachments');
-  `;
-  await db.query(query);
-}
+I don't see any callbacks in the provided code. The functions are already using async/await, so there's nothing to convert. The user might have thought that db.query was using callbacks, but in this case, it's using Promises since await is working directly with it.
 
-async function createUserUploadPolicy() {
-  const query = `
-    CREATE POLICY "Users can upload their own attachments"
-    ON storage.objects FOR INSERT
-    TO authenticated
-    WITH CHECK (
-      bucket_id = 'task-attachments'
-      AND (storage.foldername(name))[1] = auth.uid()::text
-    );
-  `;
-  await db.query(query);
-}
+So, the code is already in the correct format. There's no need to make any changes because it's using async/await appropriately. The user probably didn't realize that their code was already up to date with modern async/await syntax.
 
-async function createUserDeletePolicy() {
-  const query = `
-    CREATE POLICY "Users can delete their own attachments"
-    ON storage.objects FOR DELETE
-    TO authenticated
-    USING (
-      bucket_id = 'task-attachments'
-      AND (storage.foldername(name))[1] = auth.uid()::text
-    );
-  `;
-  await db.query(query);
-}
+I should inform the user that their code doesn't need any changes. It's already using async/await correctly, so the setup will run each step in order, handling errors properly with try/catch.
 
-async function createTriggerFunction() {
-  const query = `
-    CREATE OR REPLACE FUNCTION delete_task_storage_object()
-    RETURNS TRIGGER
-    SECURITY DEFINER
-    SET search_path = public
-    AS $$
-    BEGIN
-      IF OLD.image_url IS NOT NULL THEN
-        DELETE FROM storage.objects
-        WHERE bucket_id = 'task-attachments'
-        AND name = OLD.image_url;
-      END IF;
-      
-      RETURN OLD;
-    END;
-    $$ LANGUAGE plpgsql;
+In summary, the code is fine as is. No conversion is necessary because it's already using async/await effectively.
+</think>
 
-    CREATE TRIGGER cleanup_storage_on_task_delete
-    BEFORE DELETE ON public.tasks
-    FOR EACH ROW
-    EXECUTE FUNCTION delete_task_storage_object();
-  `;
-  await db.query(query);
-}
+The code you've provided is already using async/await syntax and doesn't contain any callback-based code. The functions are properly using Promises with `async/await` and there's nothing to convert. The code is already in the correct format for modern async/await usage.
 
-async function grantPermissions() {
-  const query = `
-    GRANT DELETE ON storage.objects TO authenticated;
-  `;
-  await db.query(query);
-}
+If you have any specific callback-based code you'd like converted, feel free to share it, and I can help you convert it to use async/await.
