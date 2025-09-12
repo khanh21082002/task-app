@@ -1,8 +1,5 @@
-const Footer = () => {
-  return (
-    <footer className="bg-transparent text-white py-4">
-    </footer>
-  );
-};
+const Footer = () => (
+  <footer className="bg-transparent text-white py-4" />
+);
 
 export default Footer;
