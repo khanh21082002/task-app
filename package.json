@@ -1,52 +1,56 @@
 {
+  "_comments": "This is a Next.js project configuration file. It defines project dependencies, scripts, and other metadata.",
   "name": "task-app-project",
   "version": "0.1.0",
   "private": true,
+  "_comments": "Scripts section defines npm commands available for the project",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "jest"
+    "dev": "next dev",        // Runs the application in development mode
+    "build": "next build",      // Builds the application for production
+    "start": "next start",     // Starts the production server
+    "lint": "next lint",       // Lints the application code
+    "test": "jest"             // Runs unit tests using Jest
   },
+  "_comments": "Dependencies section lists all production libraries used by the application",
   "dependencies": {
-    "@radix-ui/react-checkbox": "^1.1.2",
-    "@radix-ui/react-dialog": "^1.1.2",
-    "@radix-ui/react-label": "^2.1.0",
-    "@radix-ui/react-popover": "^1.1.2",
-    "@radix-ui/react-select": "^2.1.2",
-    "@radix-ui/react-slot": "^1.1.0",
-    "@radix-ui/react-toast": "^1.2.2",
-    "@supabase/ssr": "^0.5.2",
-    "@supabase/supabase-js": "^2.47.10",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "date-fns": "^3.6.0",
-    "lucide-react": "^0.462.0",
-    "next": "14.2.16",
-    "react": "^18",
-    "react-day-picker": "^8.10.1",
-    "react-dom": "^18",
-    "react-dropzone": "^14.3.5",
-    "tailwind-merge": "^2.5.5",
-    "tailwindcss-animate": "^1.0.7"
+    "@radix-ui/react-checkbox": "^1.1.2",  // Radix UI Checkbox component
+    "@radix-ui/react-dialog": "^1.1.2",    // Radix UI Dialog component
+    "@radix-ui/react-label": "^2.1.0",      // Radix UI Label component
+    "@radix-ui/react-popover": "^1.1.2",   // Radix UI Popover component
+    "@radix-ui/react-select": "^2.1.2",     // Radix UI Select component
+    "@radix-ui/react-slot": "^1.1.0",      // Radix UI Slot component
+    "@radix-ui/react-toast": "^1.2.2",      // Radix UI Toast component
+    "@supabase/ssr": "^0.5.2",             // Supabase Server-side rendering
+    "@supabase/supabase-js": "^2.47.10",    // Supabase JavaScript client
+    "class-variance-authority": "^0.7.1",   // Utility for class variance in Tailwind
+    "clsx": "^2.1.1",                       // Utility for conditionally joining class names
+    "date-fns": "^3.6.0",                   // Date utility library
+    "lucide-react": "^0.462.0",             // Lucide icons for React
+    "next": "14.2.16",                       // Next.js framework
+    "react": "^18",                          // React library
+    "react-day-picker": "^8.10.1",            // React date picker component
+    "react-dom": "^18",                      // React DOM library
+    "react-dropzone": "^14.3.5",             // React file upload component
+    "tailwind-merge": "^2.5.5",              // Tailwind CSS utility for merging classes
+    "tailwindcss-animate": "^1.0.7"           // Tailwind CSS animations
   },
+  "_comments": "devDependencies section lists all development tools and libraries",
   "devDependencies": {
-    "@types/dotenv": "^6.1.1",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "autoprefixer": "^10.4.20",
-    "dotenv": "^16.4.7",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.16",
-    "jest": "^29.7.0",
-    "postcss": "^8.4.49",
-    "stripe": "^17.5.0",
-    "supabase": "^2.26.9",
-    "tailwindcss": "^3.4.16",
-    "ts-jest": "^29.2.5",
-    "typescript": "^5"
+    "@types/dotenv": "^6.1.1",              // TypeScript definitions for dotenv
+    "@types/jest": "^29.5.14",               // TypeScript definitions for Jest
+    "@types/node": "^20",                   // TypeScript definitions for Node.js
+    "@types/react": "^18",                   // TypeScript definitions for React
+    "@types/react-dom": "^18",               // TypeScript definitions for React DOM
+    "autoprefixer": "^10.4.20",             // PostCSS plugin for auto-prefixed CSS
+    "dotenv": "^16.4.7",                    // Loads environment variables
+    "eslint": "^8",                         // ESLint for code linting
+    "eslint-config-next": "14.2.16",         // Next.js ESLint configuration
+    "jest": "^29.7.0",                       // Jest testing framework
+    "postcss": "^8.4.49",                   // PostCSS for CSS processing
+    "stripe": "^17.5.0",                   // Stripe payment processing
+    "supabase": "^2.26.9",                  // Supabase CLI
+    "tailwindcss": "^3.4.16",               // Tailwind CSS framework
+    "ts-jest": "^29.2.5",                   // TypeScript support for Jest
+    "typescript": "^5"                       // TypeScript compiler
   }
 }
