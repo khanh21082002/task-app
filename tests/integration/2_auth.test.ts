@@ -6,86 +6,73 @@ import {
   createTask,
 } from "../test-utils/user-testing-utils";
 
-// Define test user objects with unique names and emails
-const TEST_USER_BOB = {
-  name: "Bob (Test User)",
-  email: "test-user.bob@pixegami.io",
-  password: "Test123!@#Bob",
-};
-
-const TEST_USER_CHARLIE = {
-  name: "Charlie (Test User)",
-  email: "test-user.charlie@pixegami.io",
-  password: "Test123!@#Charlie",
+const TEST_USERS = {
+  bob: {
+    name: "Bob (Test User)",
+    email: "test-user.bob@pixegami.io",
+    password: "Test123!@#Bob",
+  },
+  charlie: {
+    name: "Charlie (Test User)",
+    email: "test-user.charlie@pixegami.io",
+    password: "Test123!@#Charlie",
+  },
 };
 
 describe("Suite 2: Test Auth Use Cases", () => {
-  let testUserBob: TestUser;
-  let testUserCharlie: TestUser;
+  let testUsers: Record<string, TestUser>;
 
-  // Setup test users before running tests
   beforeAll(async () => {
-    // Create or get existing test user for Bob
-    testUserBob = await getOrCreateTestUser(TEST_USER_BOB);
-    // Create or get existing test user for Charlie
-    testUserCharlie = await getOrCreateTestUser(TEST_USER_CHARLIE);
+    testUsers = {
+      bob: await getOrCreateTestUser(TEST_USERS.bob),
+      charlie: await getOrCreateTestUser(TEST_USERS.charlie),
+    };
   }, 15_000);
 
-  // Cleanup test users after running tests
   afterAll(async () => {
-    // Delete Bob's test user if it exists
-    if (testUserBob) {
-      await cleanupTestUser(testUserBob.id);
-    }
-    // Delete Charlie's test user if it exists
-    if (testUserCharlie) {
-      await cleanupTestUser(testUserCharlie.id);
-    }
+    await Promise.all(
+      Object.values(testUsers).map(async (user) => {
+        if (user.id) await cleanupTestUser(user.id);
+      })
+    );
   }, 15_000);
 
   test("user cannot edit tasks of other users", async () => {
-    // Create a task as Bob
-    const { error: createError, data: createData } = await createTask(
-      testUserBob,
+    // Create task as Bob
+    const { data: createData, error: createError } = await createTask(
+      testUsers.bob,
       "Test Task"
     );
     expect(createError).toBeFalsy();
     expect(createData).toBeTruthy();
 
-    const task = createData![0];
+    const task = createData[0];
     const taskId = task.task_id;
 
-    // Switch to Charlie's account
+    // Sign in as Charlie
     await supabase.auth.signInWithPassword({
-      email: TEST_USER_CHARLIE.email,
-      password: TEST_USER_CHARLIE.password,
+      email: TEST_USERS.charlie.email,
+      password: TEST_USERS.charlie.password,
     });
 
-    // Try to read Bob's task as Charlie - should fail
-    const { error: readError, data: readData } = await supabase
+    // Try to read Bob's task
+    const { data, error } = await supabase
       .from("tasks")
       .select("*")
       .eq("task_id", taskId);
-    expect(readData).toHaveLength(0);
+
+    expect(error).toBeFalsy();
+    expect(data).toHaveLength(0);
   }, 15_000);
 
   test("can get jwt auth token for logged in user", async () => {
-    // Ensure the test user exists
-    await getOrCreateTestUser(TEST_USER_BOB);
-
-    // Sign in with test user credentials
     const { data, error } = await supabaseServiceClient.auth.signInWithPassword({
-      email: TEST_USER_BOB.email,
-      password: TEST_USER_BOB.password,
+      email: TEST_USERS.bob.email,
+      password: TEST_USERS.bob.password,
     });
 
-    // Verify successful authentication
     expect(data).toBeTruthy();
     expect(error).toBeFalsy();
-
-    // Extract and verify JWT token
-    const token = data.session?.access_token;
-    expect(token).toBeDefined();
-    console.log("Retrieved token:", token);
+    expect(data.session?.access_token).toBeDefined();
   }, 15_000);
 });
