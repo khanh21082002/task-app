@@ -176,27 +176,27 @@ export function useTaskManager(taskId?: string): UseTaskManagerReturn {
         data: { session },
       } = await supabase.auth.getSession();
 
-      const response = await fetch(FUNCTION_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session!.access_token}`,
-        },
-        body: JSON.stringify({ title, description }),
-      });
+      const { data, error } = await supabase
+        .from("tasks")
+        .insert([
+          {
+            title,
+            description,
+            user_id: session.user.id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ])
+        .select();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Function error response:", errorData);
-        throw new Error(errorData.message || "Failed to create task");
+      if (error) throw error;
+
+      if (data && data[0]) {
+        await fetchTasks();
+        return data[0];
       }
 
-      const taskData = await response.json();
-      if (!taskData) throw new Error("No data returned from server");
-
-      setTasks([taskData, ...tasks]);
-      setError(null);
-      return taskData;
+      throw new Error("Failed to create task");
     } catch (error: any) {
       console.error("Error creating task:", error);
       setError(error.message);
@@ -204,111 +204,17 @@ export function useTaskManager(taskId?: string): UseTaskManagerReturn {
     }
   };
 
-//   const createTask = async (title: string, description: string) => {
-//   try {
-//     const {
-//       data: { session },
-//     } = await supabase.auth.getSession();
-
-//     if (!session) {
-//       throw new Error("User not authenticated");
-//     }
-
-//     // Thêm trực tiếp vào Supabase Database (không qua Edge Function)
-//     const { data: taskData, error } = await supabase
-//       .from('tasks') // Thay 'tasks' bằng tên bảng của bạn
-//       .insert([
-//         { 
-//           title, 
-//           description, 
-//           user_id: session.user.id, // Liên kết với user
-//           created_at: new Date().toISOString() 
-//         }
-//       ])
-//       .select()
-//       .single(); // Lấy bản ghi vừa tạo
-
-//     if (error) {
-//       console.error("Supabase error:", error);
-//       throw new Error(error.message || "Failed to create task");
-//     }
-
-//     setTasks([taskData, ...tasks]);
-//     setError(null);
-//     return taskData;
-
-//   } catch (error: any) {
-//     console.error("Error creating task:", error);
-//     setError(error.message);
-//     throw error;
-//   }
-// };
-
-  const deleteTask = async (taskIdToDelete: string) => {
-    try {
-      const { error } = await supabase
-        .from("tasks")
-        .delete()
-        .eq("task_id", taskIdToDelete);
-
-      if (error) throw error;
-      setTasks(tasks.filter((t) => t.task_id !== taskIdToDelete));
-      setError(null);
-    } catch (error: any) {
-      console.error("Error deleting task:", error);
-      setError(error.message);
-      throw error;
-    }
-  };
-
-  const toggleTaskComplete = async (
-    taskIdToToggle: string,
-    completed: boolean
-  ) => {
-    try {
-      const { error } = await supabase
-        .from("tasks")
-        .update({ completed })
-        .eq("task_id", taskIdToToggle);
-
-      if (error) throw error;
-      setTasks(
-        tasks.map((t) =>
-          t.task_id === taskIdToToggle ? { ...t, completed } : t
-        )
-      );
-      setError(null);
-    } catch (error: any) {
-      console.error("Error updating task:", error);
-      setError(error.message);
-      throw error;
-    }
-  };
-
-  const refreshTasks = async () => {
-    setIsLoading(true);
-    await fetchTasks();
-  };
-
   return {
-    // State
     task,
-    tasks,
     date,
-    error,
+    tasks,
     isLoading,
-
-    // Single task operations
-    setDate,
+    error,
     updateTask,
     saveTask,
     uploadImage,
     removeImage,
-
-    // Task list operations
+    fetchTasks,
     createTask,
-    deleteTask,
-    toggleTaskComplete,
-    refreshTasks,
   };
 }
