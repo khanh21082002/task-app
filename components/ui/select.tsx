@@ -5,8 +5,10 @@ import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Core Select component using Radix UI primitives
 const Select = SelectPrimitive.Root;
 
+// Select component sub-components
 const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
 const SelectTrigger = SelectPrimitive.Trigger;
@@ -16,10 +18,12 @@ const SelectContent = SelectPrimitive.Content;
 const SelectScrollUpButton = SelectPrimitive.ScrollUpButton;
 const SelectScrollDownButton = SelectPrimitive.ScrollDownButton;
 
+// Custom SelectTrigger component with styling and ChevronDown icon
 const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
+      // Base trigger styling with focus and disabled states
       "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
       className
     )}
@@ -32,11 +36,13 @@ const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) 
   </SelectPrimitive.Trigger>
 ));
 
+// Custom SelectContent component with scroll functionality
 const SelectContent = React.forwardRef(({ className, children, position = "popper", ...props }, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
+        // Base content styling with max height and overflow handling
         "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out",
         className
       )}
@@ -52,10 +58,12 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
   </SelectPrimitive.Portal>
 ));
 
+// Custom SelectItem component with hover/focus states and checkmark
 const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
+      // Base item styling with hover, focus, and disabled states
       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     )}
